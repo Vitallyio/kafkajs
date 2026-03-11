@@ -43,7 +43,6 @@ const createFetchManager = ({
       const hasChanged =
         nodeIds.length !== current.length || nodeIds.some(nodeId => !current.includes(nodeId))
       if (hasChanged && current.length !== 0) {
-        logger.debug('Detected that fetchers should rebalance')
         throw new KafkaJSFetcherRebalanceError()
       }
     }
@@ -72,9 +71,7 @@ const createFetchManager = ({
       fetchers = createFetchers()
 
       try {
-        logger.debug('Starting fetchers...')
         await Promise.all(fetchers.map(fetcher => fetcher.start()))
-        logger.debug('Started fetchers...')
       } catch (error) {
         await stop()
 

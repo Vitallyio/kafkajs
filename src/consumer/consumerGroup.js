@@ -576,15 +576,11 @@ module.exports = class ConsumerGroup {
     }
 
     if (e.name === 'KafkaJSOffsetOutOfRange') {
-      this.logger.debug(`Attempting to recover from KafkaJSOffsetOutOfRange error ${e.message}`)
       await this.recoverFromOffsetOutOfRange(e)
       return
     }
 
     if (e.name === 'KafkaJSConnectionClosedError') {
-      this.logger.debug(
-        `Attempting to remove broker from KafkaJSConnectionClosedError error ${e.message}`
-      )
       this.cluster.removeBroker({ host: e.host, port: e.port })
       return
     }
@@ -640,7 +636,6 @@ module.exports = class ConsumerGroup {
   }
 
   checkForStaleAssignment() {
-    this.logger.debug('checking for stale assignment')
     if (!this.partitionsPerSubscribedTopic) {
       return
     }
@@ -657,7 +652,6 @@ module.exports = class ConsumerGroup {
         })
       }
     }
-    this.logger.debug('done checking for stale assignment')
   }
 
   async seekOffsets(topicPartitions) {
