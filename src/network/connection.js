@@ -201,7 +201,7 @@ module.exports = class Connection {
           )
         }
 
-        await this.disconnect('socket has ended')
+        await this.disconnect()
       }
 
       const onError = async e => {
@@ -211,9 +211,10 @@ module.exports = class Connection {
           broker: `${this.host}:${this.port}`,
           code: e.code,
         })
+
         this.logError(error.message, { stack: e.stack })
         this.rejectRequests(error)
-        await this.disconnect(`error has occurred - ${error.message}`)
+        await this.disconnect()
 
         reject(error)
       }
@@ -225,7 +226,7 @@ module.exports = class Connection {
 
         this.logError(error.message)
         this.rejectRequests(error)
-        await this.disconnect('timeout has occurred')
+        await this.disconnect()
         reject(error)
       }
 
@@ -262,10 +263,10 @@ module.exports = class Connection {
    * @public
    * @returns {Promise}
    */
-  async disconnect(reason) {
+  async disconnect() {
     this.authenticatedAt = null
     this.connectionStatus = CONNECTION_STATUS.DISCONNECTING
-    this.logDebug(`disconnecting... for ${reason}`)
+    this.logDebug('disconnecting...')
 
     await this.requestQueue.waitForPendingRequests()
     this.requestQueue.destroy()
@@ -306,9 +307,7 @@ module.exports = class Connection {
       .add(Long.fromValue(remainingNanosSince).divide(1000000))
 
     const reauthenticateAt = millisSince.add(this.reauthenticationThreshold)
-    const shouldReauthenticate = reauthenticateAt.greaterThanOrEqual(this.sessionLifetime)
-    this.logger.debug(`Got shouldReauthenticate of ${shouldReauthenticate} for ${this.clientId}`)
-    return shouldReauthenticate
+    return reauthenticateAt.greaterThanOrEqual(this.sessionLifetime)
   }
 
   /** @public */
@@ -326,7 +325,6 @@ module.exports = class Connection {
     /**
      * TODO: rewrite removing the async promise executor
      */
-    this.logger.debug(`Sending auth request for ${this.clientId}`)
 
     /* eslint-disable no-async-promise-executor */
     return new Promise(async (resolve, reject) => {
